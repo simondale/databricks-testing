@@ -19,17 +19,17 @@ az rest --method POST --resource $GLOBAL_DATABRICKS_APPID --uri $DATABRICKS_URL/
 
 az rest --method POST --resource $GLOBAL_DATABRICKS_APPID --uri $DATABRICKS_URL/api/2.0/workspace/import \
   --headers X-Databricks-Azure-SP-Management-Token="$aztoken" X-Databricks-Azure-Workspace-Resource-Id="$DATABRICKS_ID" \
-  --body '{"path":"/Tests/pipeline/pipeline","overwrite":true,"format":"JUPYTER","content":"'$(cat ./notebooks/pipeline/pipeline.ipynb | base64)'"}' \
+  --body '{"path":"/Tests/pipeline/pipeline","overwrite":true,"format":"JUPYTER","content":"'$(cat ./notebooks/pipeline/pipeline.ipynb | base64 -w0)'"}' \
   -otsv > /dev/null
 
 az rest --method POST --resource $GLOBAL_DATABRICKS_APPID --uri $DATABRICKS_URL/api/2.0/workspace/import \
   --headers X-Databricks-Azure-SP-Management-Token="$aztoken" X-Databricks-Azure-Workspace-Resource-Id="$DATABRICKS_ID" \
-  --body '{"path":"/Tests/pipeline/driver","overwrite":true,"format":"JUPYTER","content":"'$(cat ./notebooks/pipeline/driver.ipynb | base64)'"}' \
+  --body '{"path":"/Tests/pipeline/driver","overwrite":true,"format":"JUPYTER","content":"'$(cat ./notebooks/pipeline/driver.ipynb | base64 -w0)'"}' \
   -otsv > /dev/null
 
 az rest --method POST --resource $GLOBAL_DATABRICKS_APPID --uri $DATABRICKS_URL/api/2.0/workspace/import \
   --headers X-Databricks-Azure-SP-Management-Token="$aztoken" X-Databricks-Azure-Workspace-Resource-Id="$DATABRICKS_ID" \
-  --body '{"path":"/Tests/pipeline/tests","overwrite":true,"format":"JUPYTER","content":"'$(cat ./notebooks/pipeline/tests.ipynb | base64)'"}' \
+  --body '{"path":"/Tests/pipeline/tests","overwrite":true,"format":"JUPYTER","content":"'$(cat ./notebooks/pipeline/tests.ipynb | base64 -w0)'"}' \
   -otsv > /dev/null
 
 # Create the DBFS output folder
