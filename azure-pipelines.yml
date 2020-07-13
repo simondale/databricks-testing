@@ -49,21 +49,39 @@ stages:
           - download: current
             artifact: drop
           - task: AzureCLI@2
-            displayName: Deploy Databricks Notebooks
             inputs:
-              azureSubscription: Visual Studio Enterprise(abb0e29f-b7c0-4171-a437-d4df920360ab)
-              scriptType: bash
-              scriptLocation: scriptPath
-              scriptPath: $(Pipeline.Workspace)/drop/scripts/databricks.sh
-              workingDirectory: $(Pipeline.Workspace)/drop/
-            env:
-              DATABRICKS_ID: $(DatabricksId)
-          - task: PublishTestResults@2
-            inputs:
-              testResultsFormat: JUnit
-              testResultsFiles: '**/TEST-*.xml'
-              searchFolder: $(Pipeline.Workspace)/drop/
-              mergeTestResults: true
-              failTaskOnFailedTests: true
-              testRunTitle: Pipeline Tests
+              azureSubscription: 'Visual Studio Enterprise(abb0e29f-b7c0-4171-a437-d4df920360ab)'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                DATABRICKS_URL="https://"$(az resource show --id $DATABRICKS_ID --query properties.workspaceUrl -otsv)
+                TENANT_ID=$(az account show --query tenantId -otsv)
+                GLOBAL_DATABRICKS_APPID=2ff814a6-3304-4ab8-85cb-cd0e6f879c1d
+                AZURE_MANAGEMENT=https://management.core.windows.net/
+                aztoken=$(az account get-access-token --resource $AZURE_MANAGEMENT --query accessToken -otsv)
+                az rest --method POST --resource $GLOBAL_DATABRICKS_APPID --uri $DATABRICKS_URL/api/2.0/workspace/mkdirs \
+                  --headers X-Databricks-Azure-SP-Management-Token="$aztoken" X-Databricks-Azure-Workspace-Resource-Id="$DATABRICKS_ID" \
+                  --body '{"path":"/Tests/pipeline"}' \
+                
+                az account get-access-token
+              addSpnToEnvironment: true
+
+#          - task: AzureCLI@2
+#            displayName: Deploy Databricks Notebooks
+#            inputs:
+#              azureSubscription: Visual Studio Enterprise(abb0e29f-b7c0-4171-a437-d4df920360ab)
+#              scriptType: bash
+#              scriptLocation: scriptPath
+#              scriptPath: $(Pipeline.Workspace)/drop/scripts/databricks.sh
+#              workingDirectory: $(Pipeline.Workspace)/drop/
+#            env:
+#              DATABRICKS_ID: $(DatabricksId)
+#          - task: PublishTestResults@2
+#            inputs:
+#              testResultsFormat: JUnit
+#              testResultsFiles: '**/TEST-*.xml'
+#              searchFolder: $(Pipeline.Workspace)/drop/
+#              mergeTestResults: true
+#              failTaskOnFailedTests: true
+#              testRunTitle: Pipeline Tests
             
