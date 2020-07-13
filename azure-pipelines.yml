@@ -11,7 +11,7 @@ stages:
 - stage: build
   displayName: Build Databricks Artefacts
   pool:
-    name: ubuntu-latest
+    vmImage: 'ubuntu-latest'
   jobs:
   - job:
     displayName: Create Build Artefact
@@ -21,8 +21,8 @@ stages:
         displayName: Copy Assets to Staging Folder
         inputs:
           Contents: |
-            scripts/
-            notebooks/
+            scripts/**
+            notebooks/**
           TargetFolder: $(Build.ArtifactStagingDirectory)
       - task: PublishBuildArtifacts@1
         displayName: Publish Artefacts
@@ -38,8 +38,8 @@ stages:
   jobs: 
   - deployment: deploy
     environment: dev
-    pool: 
-      name: ubuntu-latest
+    pool:
+      vmImage: 'ubuntu-latest'
     workspace:
       clean: all
     strategy:
