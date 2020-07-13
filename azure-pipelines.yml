@@ -62,7 +62,13 @@ stages:
                 az rest --method POST --resource $GLOBAL_DATABRICKS_APPID --uri $DATABRICKS_URL/api/2.0/workspace/mkdirs \
                   --headers X-Databricks-Azure-SP-Management-Token="$aztoken" X-Databricks-Azure-Workspace-Resource-Id="$DATABRICKS_ID" \
                   --body '{"path":"/Tests/pipeline"}'
+
+                az rest --method GET --resource $GLOBAL_DATABRICKS_APPID --uri $DATABRICKS_URL/api/2.0/preview/scim/v2/Me \
+                  --headers X-Databricks-Azure-SP-Management-Token="$aztoken" X-Databricks-Azure-Workspace-Resource-Id="$DATABRICKS_ID"
                 
+                az rest --method GET --resource $GLOBAL_DATABRICKS_APPID --uri $DATABRICKS_URL/api/2.0/preview/scim/v2/ServicePrincipals \
+                  --headers X-Databricks-Azure-SP-Management-Token="$aztoken" X-Databricks-Azure-Workspace-Resource-Id="$DATABRICKS_ID"
+
                 az account get-access-token
               addSpnToEnvironment: true
             env:
