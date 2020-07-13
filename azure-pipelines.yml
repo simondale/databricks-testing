@@ -6,10 +6,64 @@
 trigger:
 - master
 
-pool:
-  vmImage: 'ubuntu-latest'
+stages:
 
-steps:
-- script: |
-    echo ''
-  displayName: 'Bash script'
+- stage: build
+  displayName: Build Databricks Artefacts
+  pool:
+    name: ubuntu-latest
+  jobs:
+  - job:
+    displayName: Create Build Artefact
+    steps:
+      - checkout: self
+      - task: CopyFiles@2
+        displayName: Copy Assets to Staging Folder
+        inputs:
+          Contents: |
+            scripts/
+            notebooks/
+          TargetFolder: $(Build.ArtifactStagingDirectory)
+      - task: PublishBuildArtifacts@1
+        displayName: Publish Artefacts
+        inputs:
+          PathtoPublish: $(Build.ArtifactStagingDirectory)
+          ArtifactName: drop
+          publishLocation: Container
+
+- stage: Development
+  dependsOn: Build
+  variables:
+    - group: dev
+  jobs: 
+  - deployment: deploy
+    environment: dev
+    pool: 
+      name: ubuntu-latest
+    workspace:
+      clean: all
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - download: current
+            artifact: drop
+          - task: AzureCLI@2
+            displayName: Deploy Databricks Notebooks
+            inputs:
+              azureSubscription: Visual Studio Enterprise(abb0e29f-b7c0-4171-a437-d4df920360ab)
+              scriptType: bash
+              scriptLocation: scriptPath
+              scriptPath: $(Pipeline.Workspace)/drop/scripts/databricks.sh
+              workingDirectory: $(Pipeline.Workspace)/drop/
+            env:
+              DATABRICKS_ID: $(DatabricksId)
+          - task: PublishTestResults@2
+            inputs:
+              testResultsFormat: JUnit
+              testResultsFiles: '**/TEST-*.xml'
+              searchFolder: $(Pipeline.Workspace)/drop/
+              mergeTestResults: true
+              failTaskOnFailedTests: true
+              testRunTitle: Pipeline Tests
+            
