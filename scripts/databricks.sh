@@ -74,5 +74,5 @@ done
 az rest --method GET --resource $GLOBAL_DATABRICKS_APPID --uri $DATABRICKS_URL/api/2.0/dbfs/read?path=dbfs%3A%2Ftmp%2Fpipeline%2Fjunit%2FTEST-Pipeline.xml \
   --headers X-Databricks-Azure-SP-Management-Token="$aztoken" X-Databricks-Azure-Workspace-Resource-Id="$DATABRICKS_ID" \
   --query data \
-  -otsv | base64 -D > TEST-Pipeline.xml
+  -otsv | base64 -d > TEST-Pipeline.xml
 

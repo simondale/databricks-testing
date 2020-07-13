@@ -57,7 +57,7 @@ stages:
                 DATABRICKS_URL="https://"$(az resource show --id $DATABRICKS_ID --query properties.workspaceUrl -otsv)
                 TENANT_ID=$(az account show --query tenantId -otsv)
                 GLOBAL_DATABRICKS_APPID=2ff814a6-3304-4ab8-85cb-cd0e6f879c1d
-                AZURE_MANAGEMENT=https://management.core.windows.net
+                AZURE_MANAGEMENT=https://management.core.windows.net/
                 aztoken=$(az account get-access-token --resource $AZURE_MANAGEMENT --query accessToken -otsv)
 
                 echo $DATABRICKS_URL
@@ -84,22 +84,22 @@ stages:
             env:
               DATABRICKS_ID: $(DatabricksId)
 
-#          - task: AzureCLI@2
-#            displayName: Deploy Databricks Notebooks
-#            inputs:
-#              azureSubscription: Visual Studio Enterprise(abb0e29f-b7c0-4171-a437-d4df920360ab)
-#              scriptType: bash
-#              scriptLocation: scriptPath
-#              scriptPath: $(Pipeline.Workspace)/drop/scripts/databricks.sh
-#              workingDirectory: $(Pipeline.Workspace)/drop/
-#            env:
-#              DATABRICKS_ID: $(DatabricksId)
-#          - task: PublishTestResults@2
-#            inputs:
-#              testResultsFormat: JUnit
-#              testResultsFiles: '**/TEST-*.xml'
-#              searchFolder: $(Pipeline.Workspace)/drop/
-#              mergeTestResults: true
-#              failTaskOnFailedTests: true
-#              testRunTitle: Pipeline Tests
-            
+          - task: AzureCLI@2
+            displayName: Deploy Databricks Notebooks
+            inputs:
+              azureSubscription: Visual Studio Enterprise(abb0e29f-b7c0-4171-a437-d4df920360ab)
+              scriptType: bash
+              scriptLocation: scriptPath
+              scriptPath: $(Pipeline.Workspace)/drop/scripts/databricks.sh
+              workingDirectory: $(Pipeline.Workspace)/drop/
+            env:
+              DATABRICKS_ID: $(DatabricksId)
+          - task: PublishTestResults@2
+            inputs:
+              testResultsFormat: JUnit
+              testResultsFiles: '**/TEST-*.xml'
+              searchFolder: $(Pipeline.Workspace)/drop/
+              mergeTestResults: true
+              failTaskOnFailedTests: true
+              testRunTitle: Pipeline Tests
+           
