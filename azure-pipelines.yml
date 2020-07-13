@@ -21,8 +21,8 @@ stages:
         displayName: Copy Assets to Staging Folder
         inputs:
           Contents: |
-            scripts/
-            notebooks/
+            scripts/**
+            notebooks/**
           TargetFolder: $(Build.ArtifactStagingDirectory)
       - task: PublishBuildArtifacts@1
         displayName: Publish Artefacts
