@@ -10,7 +10,7 @@ stages:
 
 - stage: build
   displayName: Build Databricks Artefacts
-  pool: ubuntu-latest
+  pool: 'ubuntu-latest'
   jobs:
   - job:
     displayName: Create Build Artefact
@@ -37,7 +37,7 @@ stages:
   jobs: 
   - deployment: deploy
     environment: dev
-    pool: ubuntu-latest
+    pool: 'ubuntu-latest'
     workspace:
       clean: all
     strategy:
