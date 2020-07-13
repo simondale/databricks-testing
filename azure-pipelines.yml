@@ -65,6 +65,8 @@ stages:
                 
                 az account get-access-token
               addSpnToEnvironment: true
+              env:
+                DATABRICKS_ID: $(DatabricksId)
 
 #          - task: AzureCLI@2
 #            displayName: Deploy Databricks Notebooks
