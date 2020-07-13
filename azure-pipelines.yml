@@ -61,12 +61,12 @@ stages:
                 aztoken=$(az account get-access-token --resource $AZURE_MANAGEMENT --query accessToken -otsv)
                 az rest --method POST --resource $GLOBAL_DATABRICKS_APPID --uri $DATABRICKS_URL/api/2.0/workspace/mkdirs \
                   --headers X-Databricks-Azure-SP-Management-Token="$aztoken" X-Databricks-Azure-Workspace-Resource-Id="$DATABRICKS_ID" \
-                  --body '{"path":"/Tests/pipeline"}' \
+                  --body '{"path":"/Tests/pipeline"}'
                 
                 az account get-access-token
               addSpnToEnvironment: true
-              env:
-                DATABRICKS_ID: $(DatabricksId)
+            env:
+              DATABRICKS_ID: $(DatabricksId)
 
 #          - task: AzureCLI@2
 #            displayName: Deploy Databricks Notebooks
