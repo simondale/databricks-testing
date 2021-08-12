@@ -34,7 +34,7 @@ stages:
 - stage: Development
   dependsOn: Build
   variables:
-    - group: dev
+    - group: databricks-dev
   jobs: 
   - deployment: deploy
     environment: dev
