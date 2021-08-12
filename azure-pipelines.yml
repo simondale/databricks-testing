@@ -75,7 +75,7 @@ stages:
               databricks workspace mkdirs /DatabricksTesting
               databricks workspace import_dir --overwrite $(Pipeline.Workspace)/package /DatabricksTesting
             displayName: Upload notebooks
-            workingDirectory: $(Pipeline.Workspace)/package
+            workingDirectory: $(Pipeline.Workspace)/drop
             env:
               DATABRICKS_HOST: $(DatabricksHost)
               DATABRICKS_TOKEN: $(DatabricksToken)
