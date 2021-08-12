@@ -96,7 +96,7 @@ stages:
               echo $body
               run_id=$(curl -X POST -H "Authorization: Bearer $DATABRICKS_TOKEN" -d @<(echo $body) $DATABRICKS_HOST/api/2.0/jobs/runs/submit | jq -r .run_id)
               echo $run_id
-              while tre; do
+              while true; do
                 state=$(curl -H "Authorization: Bearer $DATABRICKS_TOKEN" $DATABRICKS_HOKST/api/2.0/jobs/runs/get?run_id=$run_id | jq -r state.life_cycle_state)
                 echo $state
                 if [ "$state" == "TERMINATED" ]; then
