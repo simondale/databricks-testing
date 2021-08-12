@@ -74,7 +74,7 @@ stages:
           - bash: |
               source venv/bin/activate
               databricks workspace mkdirs /DatabricksTesting
-              databricks workspace import_dir --overwrite $(Pipeline.Workspace)/package /DatabricksTesting
+              databricks workspace import_dir --overwrite $(Pipeline.Workspace)/drop /DatabricksTesting
             displayName: Upload notebooks
             workingDirectory: $(Pipeline.Workspace)/drop
             env:
