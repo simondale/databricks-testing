@@ -60,6 +60,7 @@ stages:
               pip install wheel
               pip install databricks-cli --prefer-binary
             displayName: Setup Python environment
+            workingDirectory: $(Pipeline.Workspace)/drop
           - task: AzureCLI@2
             displayName: Create access token
             inputs:
