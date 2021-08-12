@@ -112,6 +112,7 @@ stages:
                 sleep 5
               done
               curl --netrc -H "Authorization: Bearer $DATABRICKS_TOKEN" $DATABRICKS_HOST/api/2.0/jobs/runs/get-output?run_id=$run_id | jq -r .notebook_output.result > TEST-Databricks.xml
+              cat TEST-Databricks.xml
             displayName: Execute tests
             workingDirectory: $(Pipeline.Workspace)/drop
             env:
@@ -120,7 +121,7 @@ stages:
           - task: PublishTestResults@2
             inputs:
               testResultsFormat: JUnit
-              testResultsFiles: '**/Test-*.xml'
+              testResultsFiles: 'Test-*.xml'
               searchFolder: $(Pipeline.Workspace)/drop
               mergeTestResults: true
               failTaskOnFailedTests: true
