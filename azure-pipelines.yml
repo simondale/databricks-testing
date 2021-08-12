@@ -85,8 +85,8 @@ stages:
               body=$(printf '{
                 "run_name": "Unit tests",
                 "new_cluster": {
-                    "spark_version": "",
-                    "node_type_id": "",
+                    "spark_version": "8.3.x-scala2.12",
+                    "node_type_id": "Standard_F4s",
                     "num_workers": 1
                 },
                 "notebook_task": {
@@ -94,7 +94,7 @@ stages:
                 }
               }')
               echo $body
-              run_id=$(curl -X POST -H "Authorization: Bearer $DATABRICKS_TOKEN" -d ''$body'' $DATABRICKS_HOST/api/2.0/jobs/runs/submit | jq -r .run_id)
+              run_id=$(curl -X POST -H "Authorization: Bearer $DATABRICKS_TOKEN" -d @<(echo $body) $DATABRICKS_HOST/api/2.0/jobs/runs/submit | jq -r .run_id)
               echo $run_id
               while tre; do
                 state=$(curl -H "Authorization: Bearer $DATABRICKS_TOKEN" $DATABRICKS_HOKST/api/2.0/jobs/runs/get?run_id=$run_id | jq -r state.life_cycle_state)
