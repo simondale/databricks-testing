@@ -121,7 +121,7 @@ stages:
           - task: PublishTestResults@2
             inputs:
               testResultsFormat: JUnit
-              testResultsFiles: 'Test-*.xml'
+              testResultsFiles: 'TEST-*.xml'
               searchFolder: $(Pipeline.Workspace)/drop
               mergeTestResults: true
               failTaskOnFailedTests: true
