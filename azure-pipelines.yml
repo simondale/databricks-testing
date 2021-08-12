@@ -4,7 +4,7 @@
 # https://aka.ms/yaml
 
 trigger:
-- master
+- main
 
 stages:
 
@@ -63,7 +63,7 @@ stages:
           - task: AzureCLI@2
             displayName: Create access token
             inputs:
-              azureSubscription: DatabricksTesting
+              azureSubscription: DatabricksCICD
               scriptType: bash
               scriptLocation: inlineScript
               inlineScript: |
