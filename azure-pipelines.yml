@@ -48,58 +48,81 @@ stages:
           steps:
           - download: current
             artifact: drop
-          - task: AzureCLI@2
+          - task: UsePythonVersion@0
+            displayName: Set Python version
             inputs:
-              azureSubscription: 'Visual Studio Enterprise(abb0e29f-b7c0-4171-a437-d4df920360ab)'
-              scriptType: 'bash'
-              scriptLocation: 'inlineScript'
-              inlineScript: |
-                DATABRICKS_URL="https://"$(az resource show --id $DATABRICKS_ID --query properties.workspaceUrl -otsv)
-                TENANT_ID=$(az account show --query tenantId -otsv)
-                GLOBAL_DATABRICKS_APPID=2ff814a6-3304-4ab8-85cb-cd0e6f879c1d
-                AZURE_MANAGEMENT=https://management.core.windows.net/
-                aztoken=$(az account get-access-token --resource $AZURE_MANAGEMENT --query accessToken -otsv)
-
-                echo $DATABRICKS_URL
-                echo $DATABRICKS_ID
-
-                az rest --method POST --resource $GLOBAL_DATABRICKS_APPID --uri $DATABRICKS_URL/api/2.0/token/create \
-                  --headers X-Databricks-Azure-SP-Management-Token="$aztoken" X-Databricks-Azure-Workspace-Resource-Id="$DATABRICKS_ID" \
-                  --body '{"comment":"CI/CD"}' \
-                  --query token_value \
-                  -otsv
-
-                az rest --method POST --resource $GLOBAL_DATABRICKS_APPID --uri $DATABRICKS_URL/api/2.0/workspace/mkdirs \
-                  --headers X-Databricks-Azure-SP-Management-Token="$aztoken" X-Databricks-Azure-Workspace-Resource-Id="$DATABRICKS_ID" \
-                  --body '{"path":"/Tests/pipeline"}'
-
-                az rest --method GET --resource $GLOBAL_DATABRICKS_APPID --uri $DATABRICKS_URL/api/2.0/preview/scim/v2/Me \
-                  --headers X-Databricks-Azure-SP-Management-Token="$aztoken" X-Databricks-Azure-Workspace-Resource-Id="$DATABRICKS_ID"
-                
-                az rest --method GET --resource $GLOBAL_DATABRICKS_APPID --uri $DATABRICKS_URL/api/2.0/preview/scim/v2/ServicePrincipals \
-                  --headers X-Databricks-Azure-SP-Management-Token="$aztoken" X-Databricks-Azure-Workspace-Resource-Id="$DATABRICKS_ID"
-
-                az account get-access-token
-              addSpnToEnvironment: true
-            env:
-              DATABRICKS_ID: $(DatabricksId)
-
+              versionSpec: 3.8
+              addToPath: true
+              architecture: x64
+          - bash: |
+              python3 -m venv venv
+              source venv/bin/activate
+              pip install wheel
+              pip install databricks-cli --prefer-binary
+            displayName: Setup Python environment
           - task: AzureCLI@2
-            displayName: Deploy Databricks Notebooks
+            displayName: Create access token
             inputs:
-              azureSubscription: Visual Studio Enterprise(abb0e29f-b7c0-4171-a437-d4df920360ab)
+              azureSubscription: DatabricksTesting
               scriptType: bash
-              scriptLocation: scriptPath
-              scriptPath: $(Pipeline.Workspace)/drop/scripts/databricks.sh
-              workingDirectory: $(Pipeline.Workspace)/drop/
+              scriptLocation: inlineScript
+              inlineScript: |
+                access_token=$(az account get-access-token --resource 2ff814a6-3304-4ab8-85cb-cd0e6f879c1d --query accessToken -otsv)
+                echo "##vso[task.setvariable variable=DatabricksToken]$access_token"
+              workingDirectory: $(Pipeline.Workspace)/drop
+          - bash: |
+              source venv/bin/activate
+              databricks workspace mkdirs /DatabricksTesting
+              databricks workspace import_dir --overwrite $(Pipeline.Workspace)/package /DatabricksTesting
+            displayName: Upload notebooks
+            workingDirectory: $(Pipeline.Workspace)/package
             env:
-              DATABRICKS_ID: $(DatabricksId)
+              DATABRICKS_HOST: $(DatabricksHost)
+              DATABRICKS_TOKEN: $(DatabricksToken)
+          - bash: |
+              source venv/bin/activate
+              body=$(printf '{
+                "run_name": "Unit tests",
+                "new_cluster": {
+                    "spark_version": "",
+                    "node_type_id": "",
+                    "num_workers": 1
+                },
+                "notebook_task": {
+                    "notebook_path": "/DatabricksTesting/testrunner"
+                }
+              }')
+              run_id=$(curl -X POST -H "Authorization: Bearer $DATABRICKS_TOKEN" -d $body $DATABRICKS_HOST/api/2.0/jobs/runs/submit | jq -r .run_id)
+              while tre; do
+                state=$(curl -H "Authorization: Bearer $DATABRICKS_TOKEN" $DATABRICKS_HOKST/api/2.0/jobs/runs/get?run_id=$run_id | jq -r state.life_cycle_state)
+                echo $state
+                if [ "$state" == "TERMINATED" ]; then
+                  break
+                fi
+                if [ "$state" == "SKIPPED" ]; then
+                  echo "SKIPPED"
+                  exit 1
+                fi
+                if [ "$state" == "INTERNAL_ERROR" ]; then
+                  echo "INTERNAL_ERROR"
+                  exit 1
+                fi
+                sleep 5
+              done
+              curl --netrc -H "Authorization: Bearer $DATABRICKS_TOKEN" $DATABRIKCS_HOST/api/2.0/jobs/runs/get-output?run_id=$run_id | jq -r .notebook_output.result > TEST-Databricks.xml
+            displayName: Execute tests
+            workingDirectory: $(Pipeline.Workspace)/drop
+            env:
+              DATABRICKS_HOST: $(DatabricksHost)
+              DATABRICKS_TOKEN: $(DatabricksToken)
           - task: PublishTestResults@2
             inputs:
               testResultsFormat: JUnit
-              testResultsFiles: '**/TEST-*.xml'
-              searchFolder: $(Pipeline.Workspace)/drop/
+              testResultsFiles: '**/Test-*.xml'
+              searchFolder: $(Pipeline.Workspace)/drop
               mergeTestResults: true
               failTaskOnFailedTests: true
-              testRunTitle: Pipeline Tests
+              testRunTitle: Databricks Tests
+            displayName: Publish test results
+            condition: always()
            

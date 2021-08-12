@@ -1,0 +1,5 @@
+databricks-connect==8.1.10
+notebook
+numpy==1.19.2
+pandas==1.1.5
+
