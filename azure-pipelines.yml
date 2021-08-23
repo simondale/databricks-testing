@@ -112,6 +112,8 @@ stages:
                 sleep 5
               done
               curl --netrc -H "Authorization: Bearer $DATABRICKS_TOKEN" $DATABRICKS_HOST/api/2.0/jobs/runs/get-output?run_id=$run_id | jq -r .notebook_output.result > TEST-Databricks.xml
+              mkdir coverage/
+              curl --netrc -H "Authorization: Bearer $DATABRICKS_TOKEN" $DATABRICKS_HOST/api/2.0/jobs/runs/export?run_id=$run_id | jq -r ".views[].content" > coverage/COVERAGE-Databricks.xml
               cat TEST-Databricks.xml
             displayName: Execute tests
             workingDirectory: $(Pipeline.Workspace)/drop
@@ -128,4 +130,12 @@ stages:
               testRunTitle: Databricks Tests
             displayName: Publish test results
             condition: always()
+          - task: PublishBuildArtifacts@1
+            displayName: Publish Coverage Report
+            inputs:
+              PathtoPublish: $(Pipeline.Workspace)/drop/coverage
+              ArtifactName: coverage
+              publishLocation: Container
+            condition: always()
+
            
