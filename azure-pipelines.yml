@@ -90,7 +90,7 @@ stages:
                     "num_workers": 1
                 },
                 "notebook_task": {
-                    "notebook_path": "/DatabricksTesting/testrunner"
+                    "notebook_path": "/DatabricksTesting/coverage_runner"
                 }
               }')
               run_id=$(curl -X POST -H "Authorization: Bearer $DATABRICKS_TOKEN" -d @<(echo $body) $DATABRICKS_HOST/api/2.0/jobs/runs/submit | jq -r .run_id)
