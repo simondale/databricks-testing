@@ -113,7 +113,7 @@ stages:
               done
               curl --netrc -H "Authorization: Bearer $DATABRICKS_TOKEN" $DATABRICKS_HOST/api/2.0/jobs/runs/get-output?run_id=$run_id | jq -r .notebook_output.result > TEST-Databricks.xml
               mkdir coverage/
-              curl --netrc -H "Authorization: Bearer $DATABRICKS_TOKEN" $DATABRICKS_HOST/api/2.0/jobs/runs/export?run_id=$run_id | jq -r ".views[].content" > coverage/COVERAGE-Databricks.xml
+              curl --netrc -H "Authorization: Bearer $DATABRICKS_TOKEN" $DATABRICKS_HOST/api/2.0/jobs/runs/export?run_id=$run_id | jq -r ".views[].content" > coverage/COVERAGE-Databricks.html
               cat TEST-Databricks.xml
             displayName: Execute tests
             workingDirectory: $(Pipeline.Workspace)/drop
